@@ -11,6 +11,8 @@ app.use(express.json());
 app.use("/user", authRouter);
 app.use("/todos", todoRouter);
 
+app.get("/", (req, res) => res.send("The Todo Project Server"));
+
 // Connect to DB
 mongoose.connect(
   process.env.DB_URL,
