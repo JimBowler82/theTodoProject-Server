@@ -3,11 +3,13 @@ const app = express();
 const mongoose = require("mongoose");
 const cors = require("cors");
 const authRouter = require("./routes/auth");
+const todoRouter = require("./routes/todos");
 
 // Middleware
 app.use(cors());
 app.use(express.json());
 app.use("/user", authRouter);
+app.use("/todos", todoRouter);
 
 // Connect to DB
 mongoose.connect(
