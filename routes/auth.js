@@ -3,6 +3,7 @@ const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const { registerValidation, loginValidation } = require("../util/validation");
+const { checkLoggedIn } = require("../util/authorise");
 
 router.post("/register", async (req, res) => {
   // Validate data
@@ -31,10 +32,12 @@ router.post("/register", async (req, res) => {
   });
 
   try {
-    const result = await user.save();
+    const { _id, name, email } = await user.save();
+    const userObj = { _id, name, email };
     res.json({
       success: true,
       message: `User successfully added to database.`,
+      user: userObj,
     });
   } catch (error) {
     res.status(500).json({ success: false, message: error.message });
@@ -73,8 +76,11 @@ router.post("/login", async (req, res) => {
   const token = jwt.sign(userObj, process.env.TOKEN_SECRET, {
     expiresIn: 60 * 15,
   });
-  res
-    .header("auth-token", token)
-    .json({ success: true, message: "Successfully logged in", token: token });
+  res.header("auth-token", token).json({
+    success: true,
+    message: "Successfully logged in",
+    token: token,
+    user: userObj,
+  });
 });
 module.exports = router;
