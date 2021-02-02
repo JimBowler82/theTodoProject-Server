@@ -16,9 +16,29 @@ router.get("/", authoriseUser, async (req, res) => {
   }
 });
 
-router.post("/", (req, res) => {
-  console.log("Post - new todo to add");
-  res.send("adding a new todo");
+router.post("/", authoriseUser, async (req, res) => {
+  const todoList = req.body.data;
+  console.log(`Post received, add new todo`);
+  try {
+    const { err, doc } = await User.findOneAndUpdate(
+      { id: req.params.userId },
+      { $set: { todos: todoList } },
+      { new: true, useFindAndModify: false }
+    );
+    if (err) {
+      throw new Error(err);
+    } else {
+      console.log("Successfully added todo");
+      res.status(200).json({
+        success: true,
+        message: "Todo list updated from add new todo",
+        data: doc,
+      });
+    }
+  } catch (error) {
+    console.log(error);
+    res.status(400).json({ success: false, message: error.message });
+  }
 });
 
 router.patch("/:id", (req, res) => {

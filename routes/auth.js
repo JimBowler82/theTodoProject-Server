@@ -2,6 +2,7 @@ const router = require("express").Router();
 const User = require("../model/User");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
+const { listData } = require("../util/exampleData");
 const { registerValidation, loginValidation } = require("../util/validation");
 const { checkLoggedIn } = require("../util/authorise");
 
@@ -29,6 +30,7 @@ router.post("/register", async (req, res) => {
     name: req.body.name,
     email: req.body.email,
     password: hashedPassword,
+    todos: listData,
   });
 
   try {
