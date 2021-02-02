@@ -23,7 +23,7 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now,
   },
-  todos: [{ content: String, completed: Boolean }],
+  todos: [{ content: String, completed: Boolean, date: String }],
 });
 
 module.exports = mongoose.model("User", userSchema);
