@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const User = require("../model/User");
+const mongoose = require("mongoose");
 const { authoriseUser } = require("../util/authorise");
 
 router.get("/", authoriseUser, async (req, res) => {
@@ -20,35 +21,71 @@ router.post("/", authoriseUser, async (req, res) => {
   const todoList = req.body.data;
   console.log(`Post received, add new todo`);
   try {
-    const { err, doc } = await User.findOneAndUpdate(
-      { id: req.params.userId },
+    const result = await User.findOneAndUpdate(
+      { _id: req.userId },
       { $set: { todos: todoList } },
       { new: true, useFindAndModify: false }
     );
-    if (err) {
-      throw new Error(err);
-    } else {
-      console.log("Successfully added todo");
-      res.status(200).json({
-        success: true,
-        message: "Todo list updated from add new todo",
-        data: doc,
-      });
-    }
+
+    console.log("Successfully added todo", result);
+    res.status(200).json({
+      success: true,
+      message: "Todo list updated from add new todo",
+      data: result.todos,
+    });
   } catch (error) {
     console.log(error);
     res.status(400).json({ success: false, message: error.message });
   }
 });
 
-router.patch("/:id", (req, res) => {
-  console.log("update todo received");
-  res.send("Updating a todo");
+router.patch("/:id", authoriseUser, async (req, res) => {
+  try {
+    const result = await User.updateOne(
+      {
+        _id: req.userId,
+        "todos._id": req.params.id,
+      },
+      {
+        $set: {
+          "todos.$.content": req.body.data.content,
+          "todos.$.completed": req.body.data.completed,
+        },
+      },
+      { new: true, useFindAndModify: false }
+    );
+    console.log({ result });
+    console.log("Successfully updated todo!");
+
+    res.status(200).json({
+      success: true,
+      message: "Successfully updated todo!",
+      data: result,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false, message: error.message });
+  }
 });
 
-router.delete("/:id", (req, res) => {
-  console.log("delete todo received");
-  res.send("Deleting a todo");
+router.delete("/:id", authoriseUser, async (req, res) => {
+  try {
+    const result = await User.findByIdAndUpdate(
+      req.userId,
+      { $pull: { todos: { _id: req.params.id } } },
+      { new: true, useFindAndModify: false }
+    );
+
+    console.log("Successfully deleted todo!");
+    res.status(200).json({
+      success: true,
+      message: "Successfully deleted todo!",
+      data: result.todos,
+    });
+  } catch (err) {
+    console.log(err);
+    res.status(400).json({ success: false, message: error.message });
+  }
 });
 
 module.exports = router;
